@@ -10,18 +10,18 @@
     </header>
 
     <section class="content">
-      <h2>Available Files in Folder</h2>
+      <h2>Links from JSON</h2>
       {% if files_data %}
         <ul class="file-list">
-          {% for file_id, file_name, mime_type in files_data %}
+          {% for idx, title, url in files_data %}
           <li>
-            <a href="{{ url_for('view_file', file_id=file_id) }}">{{ file_name }}</a>
-            <span class="mime">({{ mime_type }})</span>
+            <a href="{{ url_for('view_file', file_idx=idx) }}">{{ title }}</a>
+            <small style="margin-left:0.5rem;">(<a href="{{ url }}">{{ url }}</a>)</small>
           </li>
           {% endfor %}
         </ul>
       {% else %}
-        <p>No files found in the folder.</p>
+        <p>No links found in the JSON file.</p>
       {% endif %}
     </section>
   </body>

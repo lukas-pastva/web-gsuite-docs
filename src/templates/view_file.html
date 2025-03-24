@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{{ page_title }} - {{ file_name }}</title>
+    <title>{{ page_title }} - {{ file_title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   </head>
   <body>
@@ -10,18 +10,17 @@
     </header>
 
     <section class="content">
-      <h2>{{ file_name }}</h2>
-      {% if iframe_url %}
-        <!-- Embed doc in an iframe with original formatting -->
+      <h2>{{ file_title }}</h2>
+      {% if embed_url %}
+        <!-- Try embedding the published or public URL in an iframe -->
         <iframe 
-          src="{{ iframe_url }}"
+          src="{{ embed_url }}"
           width="100%"
           height="600"
           style="border: none;">
         </iframe>
       {% else %}
-        <p>This file type ({{ mime_type }}) is not directly embeddable.</p>
-        <p>Provide a direct download link or other approach.</p>
+        <p>No embed URL available. Possibly not a Google Doc or is missing a link.</p>
       {% endif %}
       <p><a href="{{ url_for('index') }}">Back to List</a></p>
     </section>

@@ -9,8 +9,8 @@ COPY . .
 
 ENV FLASK_APP=app.py
 ENV FLASK_ENV=production
+ENV DATA_JSON_PATH=/tmp/files.json
 ENV REFRESH_INTERVAL=300
-
 ENV PAGE_TITLE="web-gsuite-docs"
 ENV PAGE_HEADER="My G Suite Folder"
 
