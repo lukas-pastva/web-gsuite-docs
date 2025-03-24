@@ -13,9 +13,10 @@
       <h2>Links from JSON</h2>
       {% if files_data %}
         <ul class="file-list">
-          {% for idx, title, url in files_data %}
+          {% for slug, title, url in files_data %}
           <li>
-            <a href="{{ url_for('view_file', file_idx=idx) }}">{{ title }}</a>
+            <!-- Route now goes directly to /<slug> instead of /view/<index> -->
+            <a href="{{ url_for('view_file', slug=slug) }}">{{ title }}</a>
             <small style="margin-left:0.5rem;">(<a href="{{ url }}">{{ url }}</a>)</small>
           </li>
           {% endfor %}
