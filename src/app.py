@@ -15,28 +15,29 @@ REFRESH_INTERVAL = int(os.environ.get("REFRESH_INTERVAL", "300"))  # default 5 m
 PAGE_TITLE = os.environ.get("PAGE_TITLE", "web-gsuite-docs")
 PAGE_HEADER = os.environ.get("PAGE_HEADER", "My G Suite Folder")
 
-# Dictionary keyed by slug, e.g. { "my-document": { "title": "My Document", "url": "...", ... }, ... }
+# Dictionary keyed by slug, e.g. { "mydocument-2023": {"title": "...", "url": "...", "iframeUrl": "..."}, ...}
 PUBLIC_FILES = {}
 
 def slugify(title: str) -> str:
     """
-    Convert the title to lowercase, keep letters, digits, spaces, underscores, and dashes.
-    Then replace all whitespace with a dash. Preserves existing dashes.
-    Example: "My Document - 2023!" -> "my-document-2023"
+    Convert 'title' to lowercase, then remove all characters except letters, digits,
+    underscores (_), dashes (-), and spaces. Finally, remove all spaces (with no replacement),
+    keeping the dash if it was originally there.
+      e.g.: "My Document - 2023!" -> "mydocument-2023"
     """
     s = title.lower()
-    # Remove any character not alphanumeric, space, underscore, or dash
-    s = re.sub(r'[^a-z0-9\s_\-]+', '', s)
-    # Replace one or more whitespace chars with a single dash
-    s = re.sub(r'\s+', '-', s)
-    # Strip leading/trailing dashes (if any)
+    # Keep letters, digits, underscores, dashes, and spaces. Remove all else.
+    s = re.sub(r'[^a-z0-9_\-\s]+', '', s)
+    # Remove spaces entirely.
+    s = re.sub(r'\s+', '', s)
+    # Strip leading/trailing dashes if any remain.
     s = s.strip('-')
     return s
 
 def maybe_add_embedded_param(url: str) -> str:
     """
-    If the URL appears to be a published Google Doc, Slide, or other /pub link,
-    and it doesn't already have ?embedded=true, append it.
+    If the URL appears to be a published Google Doc, Slide, or /pub link,
+    and it doesn't have '?embedded=true', append it to embed the doc in an iframe.
     """
     if "docs.google.com" in url and "/pub" in url:
         if "embedded=true" not in url:
@@ -48,10 +49,10 @@ def load_files_from_json():
     """
     Load JSON from DATA_JSON_PATH:
       [
-        { "title": "My Doc", "url": "https://docs.google.com/.../pub" },
+        {"title": "My Doc", "url": "https://docs.google.com/.../pub"},
         ...
       ]
-    Build the PUBLIC_FILES dict keyed by the slug of the title.
+    Then store them in PUBLIC_FILES keyed by the slug of each title.
     """
     global PUBLIC_FILES
 
@@ -75,10 +76,11 @@ def load_files_from_json():
         if not url:
             continue
 
+        # Possibly append ?embedded=true if it's a Google Docs/Slides pub link
         iframe_url = maybe_add_embedded_param(url)
-        page_slug = slugify(title)
 
-        file_map[page_slug] = {
+        slug = slugify(title)
+        file_map[slug] = {
             "title": title,
             "url": url,
             "iframeUrl": iframe_url
@@ -88,7 +90,7 @@ def load_files_from_json():
 
 def background_refresh_loop():
     """
-    Runs in a background thread, periodically re-loading the JSON file.
+    Periodically re-load the JSON file in a background thread.
     """
     while True:
         print("[refresh] Reloading JSON file...")
@@ -101,11 +103,11 @@ def background_refresh_loop():
 @app.route("/")
 def index():
     """
-    Lists all links from the in-memory dict as a "hop menu."
+    The home page: a 'hop menu' of buttons pointing to each file's embed page.
     """
     files_data = [(slug, info["title"], info["url"])
                   for slug, info in PUBLIC_FILES.items()]
-    # If you want them sorted by title, you can do:
+    # If desired, you could sort by title:
     # files_data.sort(key=lambda x: x[1].lower())
 
     return render_template(
@@ -118,7 +120,7 @@ def index():
 @app.route("/<slug>")
 def view_file(slug):
     """
-    Renders the link in an iframe if possible, otherwise shows a note.
+    The embed page for a given file slug.
     """
     file_data = PUBLIC_FILES.get(slug)
     if not file_data:
@@ -133,9 +135,12 @@ def view_file(slug):
     )
 
 if __name__ == "__main__":
+    # Initial load
     load_files_from_json()
 
+    # Start the background reloader
     refresh_thread = threading.Thread(target=background_refresh_loop, daemon=True)
     refresh_thread.start()
 
+    # Run the Flask server
     app.run(host="0.0.0.0", port=8080, debug=True)

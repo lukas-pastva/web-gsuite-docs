@@ -1,3 +1,4 @@
+/* Base styling */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -16,10 +17,11 @@ h1 {
   margin: 0;
 }
 
+/* Container: wide at 1005px max */
 .content {
   margin: 2rem auto;
-  width: 80%;
-  max-width: 900px;
+  width: 100%;
+  max-width: 1005px;
   background: #fff;
   padding: 1rem 2rem;
   border-radius: 4px;
@@ -28,49 +30,48 @@ h1 {
 
 /* The "hop menu" nav */
 nav.hop-menu {
-  background-color: #eee;
   padding: 1rem;
   margin-bottom: 1rem;
   border-radius: 4px;
-  text-align: center; /* center the contents */
+  text-align: center;
 }
 
 nav.hop-menu ul {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: inline-flex; /* horizontally in a row, wraps if needed */
+
+  /* Put items in a row if there's space; otherwise, wrap. */
+  display: inline-flex;
   flex-wrap: wrap;
 }
 
 nav.hop-menu li {
-  margin: 0.5rem;
+  margin: 0.25rem;
 }
 
-nav.hop-menu a {
+/* Buttons! */
+nav.hop-menu a.button {
+  display: inline-block;
+  padding: 0.5rem 1rem;
   text-decoration: none;
-  font-weight: bold;
-  color: #007bff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f3f3f3;
+  cursor: pointer;
 }
 
-nav.hop-menu a:hover {
-  text-decoration: underline;
+nav.hop-menu a.button:hover {
+  background-color: #e0e0e0;
 }
 
 /* Media query for smaller screens */
 @media (max-width: 600px) {
   .content {
-      width: 90%;
+      width: 95%;
       padding: 1rem;
   }
-  nav.hop-menu {
-      width: 90%;
-      margin: 0 auto 1rem auto;
-  }
   nav.hop-menu ul {
-      display: block; /* vertical list on smaller screens */
-  }
-  nav.hop-menu li {
-      margin: 0.25rem 0;
+      display: block; /* become vertical on small devices */
   }
 }
