@@ -13,7 +13,7 @@
     <section class="content">
       <h2>{{ file_title }}</h2>
       {% if embed_url %}
-        <!-- Try embedding the published/public URL in an iframe -->
+        <!-- Try embedding the published or public URL in an iframe -->
         <iframe 
           src="{{ embed_url }}"
           width="100%"
@@ -23,7 +23,12 @@
       {% else %}
         <p>No embed URL available. Possibly not a Google Doc or is missing a link.</p>
       {% endif %}
+
       <p><a href="{{ url_for('index') }}">Back to Menu</a></p>
+
+      <!-- The QR code image in the bottom-right corner -->
+      <img src="{{ qr_code_data_uri }}" alt="QR Code"
+           class="qr-code">
     </section>
   </body>
 </html>

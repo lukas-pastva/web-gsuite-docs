@@ -3,8 +3,11 @@ import time
 import json
 import threading
 import re
+import io
+import base64
 
-from flask import Flask, render_template
+import qrcode
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
@@ -15,29 +18,28 @@ REFRESH_INTERVAL = int(os.environ.get("REFRESH_INTERVAL", "300"))  # default 5 m
 PAGE_TITLE = os.environ.get("PAGE_TITLE", "web-gsuite-docs")
 PAGE_HEADER = os.environ.get("PAGE_HEADER", "My G Suite Folder")
 
-# Dictionary keyed by slug, e.g. { "mydocument-2023": {"title": "...", "url": "...", "iframeUrl": "..."}, ...}
+# Dictionary keyed by slug, e.g. { "mydocument-2023": {...}, ... }
 PUBLIC_FILES = {}
 
 def slugify(title: str) -> str:
     """
-    Convert 'title' to lowercase, then remove all characters except letters, digits,
-    underscores (_), dashes (-), and spaces. Finally, remove all spaces (with no replacement),
-    keeping the dash if it was originally there.
-      e.g.: "My Document - 2023!" -> "mydocument-2023"
+    Convert to lowercase, keep letters, digits, underscores (_), dashes (-), and spaces.
+    Then remove all spaces (with no replacement), preserving any dashes.
+    e.g. "My Doc - 2023!" -> "mydoc-2023"
     """
     s = title.lower()
-    # Keep letters, digits, underscores, dashes, and spaces. Remove all else.
+    # Remove all chars except letters, digits, underscores, dashes, and spaces
     s = re.sub(r'[^a-z0-9_\-\s]+', '', s)
-    # Remove spaces entirely.
+    # Remove spaces entirely
     s = re.sub(r'\s+', '', s)
-    # Strip leading/trailing dashes if any remain.
+    # Strip leading/trailing dashes
     s = s.strip('-')
     return s
 
 def maybe_add_embedded_param(url: str) -> str:
     """
-    If the URL appears to be a published Google Doc, Slide, or /pub link,
-    and it doesn't have '?embedded=true', append it to embed the doc in an iframe.
+    If the URL appears to be a published Google Doc, Slide, or other /pub link,
+    and doesn't already have ?embedded=true, append it for iframe embedding.
     """
     if "docs.google.com" in url and "/pub" in url:
         if "embedded=true" not in url:
@@ -45,14 +47,20 @@ def maybe_add_embedded_param(url: str) -> str:
             return url + separator + "embedded=true"
     return url
 
+def generate_qr_code(url: str) -> str:
+    """
+    Generate a QR code for the given URL and return it as a 'data:image/png;base64,...' string.
+    """
+    qr_img = qrcode.make(url)
+    buffer = io.BytesIO()
+    qr_img.save(buffer, format="PNG")
+    b64_img = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    return f"data:image/png;base64,{b64_img}"
+
 def load_files_from_json():
     """
-    Load JSON from DATA_JSON_PATH:
-      [
-        {"title": "My Doc", "url": "https://docs.google.com/.../pub"},
-        ...
-      ]
-    Then store them in PUBLIC_FILES keyed by the slug of each title.
+    Load JSON from DATA_JSON_PATH (an array of { "title": "...", "url": "..." }),
+    building a dict keyed by slug.
     """
     global PUBLIC_FILES
 
@@ -76,10 +84,9 @@ def load_files_from_json():
         if not url:
             continue
 
-        # Possibly append ?embedded=true if it's a Google Docs/Slides pub link
         iframe_url = maybe_add_embedded_param(url)
-
         slug = slugify(title)
+
         file_map[slug] = {
             "title": title,
             "url": url,
@@ -90,7 +97,7 @@ def load_files_from_json():
 
 def background_refresh_loop():
     """
-    Periodically re-load the JSON file in a background thread.
+    Runs in a background thread, periodically re-loading the JSON file.
     """
     while True:
         print("[refresh] Reloading JSON file...")
@@ -103,11 +110,11 @@ def background_refresh_loop():
 @app.route("/")
 def index():
     """
-    The home page: a 'hop menu' of buttons pointing to each file's embed page.
+    Home page: show a "hop menu" of buttons to each file's page.
     """
     files_data = [(slug, info["title"], info["url"])
                   for slug, info in PUBLIC_FILES.items()]
-    # If desired, you could sort by title:
+    # If you want them sorted by title:
     # files_data.sort(key=lambda x: x[1].lower())
 
     return render_template(
@@ -120,27 +127,36 @@ def index():
 @app.route("/<slug>")
 def view_file(slug):
     """
-    The embed page for a given file slug.
+    View page for a given slug: shows an iframe (if applicable) plus a QR code in bottom-right.
     """
     file_data = PUBLIC_FILES.get(slug)
     if not file_data:
         return f"File slug '{slug}' not found in JSON."
+
+    # Build a full HTTPS URL for the current route
+    # e.g. "https://mydomain.com/my-file"
+    # If the request is not already https, replace http with https in the scheme:
+    full_url = request.url.replace("http://", "https://")
+    
+    # Generate QR code
+    qr_code_data_uri = generate_qr_code(full_url)
 
     return render_template(
         "view_file.html",
         page_title=PAGE_TITLE,
         page_header=PAGE_HEADER,
         file_title=file_data["title"],
-        embed_url=file_data["iframeUrl"]
+        embed_url=file_data["iframeUrl"],
+        qr_code_data_uri=qr_code_data_uri
     )
 
 if __name__ == "__main__":
-    # Initial load
+    # Load once at startup
     load_files_from_json()
 
-    # Start the background reloader
+    # Start background reloader
     refresh_thread = threading.Thread(target=background_refresh_loop, daemon=True)
     refresh_thread.start()
 
-    # Run the Flask server
+    # Run Flask
     app.run(host="0.0.0.0", port=8080, debug=True)

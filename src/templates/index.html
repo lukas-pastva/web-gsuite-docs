@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>{{ page_title }}</title>
-    <!-- Make it responsive on mobile -->
+    <!-- Responsive design for mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   </head>
@@ -17,7 +17,7 @@
           <ul>
             {% for slug, title, url in files_data %}
               <li>
-                <!-- Each link is styled like a button in CSS -->
+                <!-- Buttons linking to the page for that slug -->
                 <a class="button" href="{{ url_for('view_file', slug=slug) }}">
                   {{ title }}
                 </a>

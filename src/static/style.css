@@ -4,6 +4,9 @@ body {
   font-family: Arial, sans-serif;
   background: #f9f9f9;
   color: #333;
+  /* Let us ensure no overlap for the QR in certain cases:
+     We'll position the .content relative so the QR code can
+     anchor to the bottom-right of .content specifically. */
 }
 
 header {
@@ -26,6 +29,8 @@ h1 {
   padding: 1rem 2rem;
   border-radius: 4px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
+
+  position: relative; /* so .qr-code can be absolutely positioned inside */
 }
 
 /* The "hop menu" nav */
@@ -41,7 +46,6 @@ nav.hop-menu ul {
   margin: 0;
   padding: 0;
 
-  /* Put items in a row if there's space; otherwise, wrap. */
   display: inline-flex;
   flex-wrap: wrap;
 }
@@ -50,7 +54,7 @@ nav.hop-menu li {
   margin: 0.25rem;
 }
 
-/* Buttons! */
+/* Buttons in hop menu */
 nav.hop-menu a.button {
   display: inline-block;
   padding: 0.5rem 1rem;
@@ -65,6 +69,17 @@ nav.hop-menu a.button:hover {
   background-color: #e0e0e0;
 }
 
+/* The QR code at bottom-right of .content */
+.qr-code {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 110px;
+  height: 110px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+}
+
 /* Media query for smaller screens */
 @media (max-width: 600px) {
   .content {
@@ -72,6 +87,10 @@ nav.hop-menu a.button:hover {
       padding: 1rem;
   }
   nav.hop-menu ul {
-      display: block; /* become vertical on small devices */
+      display: block; /* vertical on small devices */
+  }
+  .qr-code {
+      width: 80px;
+      height: 80px;
   }
 }
