@@ -15,17 +15,23 @@ REFRESH_INTERVAL = int(os.environ.get("REFRESH_INTERVAL", "300"))  # default 5 m
 PAGE_TITLE = os.environ.get("PAGE_TITLE", "web-gsuite-docs")
 PAGE_HEADER = os.environ.get("PAGE_HEADER", "My G Suite Folder")
 
-# We'll store files in this dict, keyed by slug: { "mydoc": { "title": ..., "url": ..., "iframeUrl": ... },
-#                                                 "anotherdoc": { "title": ..., "url": ..., "iframeUrl": ... }, ... }
+# Dictionary keyed by slug, e.g. { "my-document": { "title": "My Document", "url": "...", ... }, ... }
 PUBLIC_FILES = {}
 
 def slugify(title: str) -> str:
     """
-    Convert title to lowercase, remove spaces, punctuation, etc. 
-    For example: "My Document 2023!" -> "mydocument2023"
+    Convert the title to lowercase, keep letters, digits, spaces, underscores, and dashes.
+    Then replace all whitespace with a dash. Preserves existing dashes.
+    Example: "My Document - 2023!" -> "my-document-2023"
     """
-    # Convert to lowercase, remove all non-word characters, then remove spaces if any remain, etc.
-    return re.sub(r"\W+", "", title.lower())
+    s = title.lower()
+    # Remove any character not alphanumeric, space, underscore, or dash
+    s = re.sub(r'[^a-z0-9\s_\-]+', '', s)
+    # Replace one or more whitespace chars with a single dash
+    s = re.sub(r'\s+', '-', s)
+    # Strip leading/trailing dashes (if any)
+    s = s.strip('-')
+    return s
 
 def maybe_add_embedded_param(url: str) -> str:
     """
@@ -45,7 +51,7 @@ def load_files_from_json():
         { "title": "My Doc", "url": "https://docs.google.com/.../pub" },
         ...
       ]
-    Then build the PUBLIC_FILES dict keyed by a slug of the title.
+    Build the PUBLIC_FILES dict keyed by the slug of the title.
     """
     global PUBLIC_FILES
 
@@ -69,10 +75,7 @@ def load_files_from_json():
         if not url:
             continue
 
-        # Potentially modify the URL to ensure ?embedded=true for published docs:
         iframe_url = maybe_add_embedded_param(url)
-
-        # Create a slug from the title
         page_slug = slugify(title)
 
         file_map[page_slug] = {
@@ -98,13 +101,12 @@ def background_refresh_loop():
 @app.route("/")
 def index():
     """
-    Lists all links from the in-memory dict.
+    Lists all links from the in-memory dict as a "hop menu."
     """
-    # We'll produce a list of tuples: (slug, title, url)
-    files_data = [(slug, info["title"], info["url"]) for slug, info in PUBLIC_FILES.items()]
-
-    # If you want them sorted alphabetically by title or slug, you can do:
-    # files_data.sort(key=lambda x: x[1].lower())  # sort by title
+    files_data = [(slug, info["title"], info["url"])
+                  for slug, info in PUBLIC_FILES.items()]
+    # If you want them sorted by title, you can do:
+    # files_data.sort(key=lambda x: x[1].lower())
 
     return render_template(
         "index.html",
@@ -131,12 +133,9 @@ def view_file(slug):
     )
 
 if __name__ == "__main__":
-    # Load once at startup:
     load_files_from_json()
 
-    # Start background thread to refresh every REFRESH_INTERVAL:
     refresh_thread = threading.Thread(target=background_refresh_loop, daemon=True)
     refresh_thread.start()
 
-    # Run dev server
     app.run(host="0.0.0.0", port=8080, debug=True)

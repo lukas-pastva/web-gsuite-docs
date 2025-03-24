@@ -1,53 +1,76 @@
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f9f9f9;
-    color: #333;
-  }
-  
-  header {
-    background: #444;
-    color: #fff;
-    padding: 1rem;
-    text-align: center;
-  }
-  
-  h1 {
-    margin: 0;
-  }
-  
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f9f9f9;
+  color: #333;
+}
+
+header {
+  background: #444;
+  color: #fff;
+  padding: 1rem;
+  text-align: center;
+}
+
+h1 {
+  margin: 0;
+}
+
+.content {
+  margin: 2rem auto;
+  width: 80%;
+  max-width: 900px;
+  background: #fff;
+  padding: 1rem 2rem;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* The "hop menu" nav */
+nav.hop-menu {
+  background-color: #eee;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  text-align: center; /* center the contents */
+}
+
+nav.hop-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: inline-flex; /* horizontally in a row, wraps if needed */
+  flex-wrap: wrap;
+}
+
+nav.hop-menu li {
+  margin: 0.5rem;
+}
+
+nav.hop-menu a {
+  text-decoration: none;
+  font-weight: bold;
+  color: #007bff;
+}
+
+nav.hop-menu a:hover {
+  text-decoration: underline;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 600px) {
   .content {
-    margin: 2rem auto;
-    width: 80%;
-    max-width: 900px;
-    background: #fff;
-    padding: 1rem 2rem;
-    border-radius: 4px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 90%;
+      padding: 1rem;
   }
-  
-  .file-list {
-    list-style-type: none;
-    padding: 0;
+  nav.hop-menu {
+      width: 90%;
+      margin: 0 auto 1rem auto;
   }
-  
-  .file-list li {
-    margin-bottom: 0.5rem;
+  nav.hop-menu ul {
+      display: block; /* vertical list on smaller screens */
   }
-  
-  .file-list a {
-    text-decoration: none;
-    font-weight: bold;
-    color: #007bff;
+  nav.hop-menu li {
+      margin: 0.25rem 0;
   }
-  
-  .file-list a:hover {
-    text-decoration: underline;
-  }
-  
-  .mime {
-    font-size: 0.9rem;
-    color: #666;
-    margin-left: 0.5rem;
-  }
-  
+}

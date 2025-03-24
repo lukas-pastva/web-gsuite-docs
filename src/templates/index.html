@@ -2,6 +2,8 @@
 <html>
   <head>
     <title>{{ page_title }}</title>
+    <!-- Make it responsive on mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   </head>
   <body>
@@ -10,17 +12,16 @@
     </header>
 
     <section class="content">
-      <h2>Links from JSON</h2>
       {% if files_data %}
-        <ul class="file-list">
-          {% for slug, title, url in files_data %}
-          <li>
-            <!-- Route now goes directly to /<slug> instead of /view/<index> -->
-            <a href="{{ url_for('view_file', slug=slug) }}">{{ title }}</a>
-            <small style="margin-left:0.5rem;">(<a href="{{ url }}">{{ url }}</a>)</small>
-          </li>
-          {% endfor %}
-        </ul>
+        <nav class="hop-menu">
+          <ul>
+            {% for slug, title, url in files_data %}
+              <li>
+                <a href="{{ url_for('view_file', slug=slug) }}">{{ title }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </nav>
       {% else %}
         <p>No links found in the JSON file.</p>
       {% endif %}
