@@ -14,32 +14,33 @@ REFRESH_INTERVAL = int(os.environ.get("REFRESH_INTERVAL", "300"))  # default 5 m
 PAGE_TITLE = os.environ.get("PAGE_TITLE", "web-gsuite-docs")
 PAGE_HEADER = os.environ.get("PAGE_HEADER", "My G Suite Folder")
 
-# In-memory store: { file_id: { name, mimeType, iframeUrl } }
+# We'll store files in this dict: { "0": { "title": ..., "url": ..., "iframeUrl": ... },
+#                                  "1": { "title": ..., "url": ..., "iframeUrl": ... }, ... }
 PUBLIC_FILES = {}
 
-def generate_iframe_url(file_id, mime_type):
+def maybe_add_embedded_param(url: str) -> str:
     """
-    Return a Google Docs/Sheets/Slides 'preview' link for embedding in an iframe.
+    If the URL appears to be a published Google Doc, Slide, or other /pub link,
+    and it doesn't already have ?embedded=true, append it.
+    This is optional convenience, so you don't have to type ?embedded=true each time.
     """
-    if mime_type == 'application/vnd.google-apps.document':
-        # Google Docs
-        return f"https://docs.google.com/document/d/{file_id}/preview"
-    elif mime_type == 'application/vnd.google-apps.spreadsheet':
-        # Google Sheets
-        return f"https://docs.google.com/spreadsheets/d/{file_id}/preview"
-    elif mime_type == 'application/vnd.google-apps.presentation':
-        # Google Slides
-        return f"https://docs.google.com/presentation/d/{file_id}/preview"
-    else:
-        return None
+    # If it's not docs.google.com or doesn't have '/pub' in it, we just return as-is.
+    if "docs.google.com" in url and "/pub" in url:
+        # If it already has ? or & we can append differently, but simplest is:
+        if "embedded=true" not in url:
+            # If there's already a '?', append '&'; otherwise, append '?'
+            separator = '&' if '?' in url else '?'
+            return url + separator + "embedded=true"
+    return url
 
 def load_files_from_json():
     """
-    Load JSON from DATA_JSON_PATH and build the in-memory PUBLIC_FILES dict.
-    JSON structure: [
-      { "id": "<file_id>", "name": "<file_name>", "mimeType": "<mime_type>" },
-      ...
-    ]
+    Load JSON from DATA_JSON_PATH:
+      [
+        { "title": "My Doc", "url": "https://docs.google.com/.../pub" },
+        ...
+      ]
+    Build the PUBLIC_FILES dict keyed by index (string).
     """
     global PUBLIC_FILES
 
@@ -50,23 +51,29 @@ def load_files_from_json():
 
     try:
         with open(DATA_JSON_PATH, "r") as f:
-            files_list = json.load(f)
+            data = json.load(f)
     except (json.JSONDecodeError, OSError) as e:
         print(f"[ERROR] Could not load/parse JSON file: {e}")
         PUBLIC_FILES = {}
         return
 
     file_map = {}
-    for entry in files_list:
-        fid = entry.get("id")
-        fname = entry.get("name", "Untitled")
-        mime_type = entry.get("mimeType", "")
-        if fid:
-            file_map[fid] = {
-                "name": fname,
-                "mimeType": mime_type,
-                "iframeUrl": generate_iframe_url(fid, mime_type)
-            }
+    for i, entry in enumerate(data):
+        title = entry.get("title", f"Untitled {i}")
+        url = entry.get("url", "").strip()
+        if not url:
+            continue
+
+        # Potentially modify the URL to ensure ?embedded=true for published docs:
+        iframe_url = maybe_add_embedded_param(url)
+
+        # We'll store them with a string index (e.g. "0", "1", "2", ...)
+        key = str(i)
+        file_map[key] = {
+            "title": title,
+            "url": url,
+            "iframeUrl": iframe_url
+        }
 
     PUBLIC_FILES = file_map
 
@@ -85,9 +92,12 @@ def background_refresh_loop():
 @app.route("/")
 def index():
     """
-    Lists all files from the in-memory dict.
+    Lists all links from the in-memory dict.
     """
-    files_data = [(fid, info["name"], info["mimeType"]) for fid, info in PUBLIC_FILES.items()]
+    # We'll produce a list of tuples: (index_str, title, original_url)
+    files_data = [(idx, info["title"], info["url"]) for idx, info in PUBLIC_FILES.items()]
+    # Sort by index to keep them in the same order as the JSON
+    files_data.sort(key=lambda x: int(x[0]))
     return render_template(
         "index.html",
         page_title=PAGE_TITLE,
@@ -95,22 +105,23 @@ def index():
         files_data=files_data
     )
 
-@app.route("/view/<file_id>")
-def view_file(file_id):
+@app.route("/view/<file_idx>")
+def view_file(file_idx):
     """
-    If the file is Google Docs/Sheets/Slides, embed in an iframe. Otherwise, show a note.
+    Renders the link in an iframe if possible, otherwise shows a note.
     """
-    file_data = PUBLIC_FILES.get(file_id)
+    file_data = PUBLIC_FILES.get(file_idx)
     if not file_data:
-        return f"File {file_id} not found or not accessible."
+        return f"File index {file_idx} not found in JSON."
 
+    # If the user wants to see the raw link, we have file_data["url"]
+    # The embed link is file_data["iframeUrl"]
     return render_template(
         "view_file.html",
         page_title=PAGE_TITLE,
         page_header=PAGE_HEADER,
-        file_name=file_data["name"],
-        mime_type=file_data["mimeType"],
-        iframe_url=file_data["iframeUrl"]
+        file_title=file_data["title"],
+        embed_url=file_data["iframeUrl"]
     )
 
 if __name__ == "__main__":
