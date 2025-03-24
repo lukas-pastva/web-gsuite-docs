@@ -1,47 +1,21 @@
 import os
-import re
 import time
+import json
 import threading
 
 from flask import Flask, render_template
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 
 app = Flask(__name__)
 
-# --- Environment Variables ---
-GSUITE_FOLDER_URL = os.environ.get("GSUITE_FOLDER_URL", "")
+# Environment Variables
+DATA_JSON_PATH = os.environ.get("DATA_JSON_PATH", "/tmp/files.json")
 REFRESH_INTERVAL = int(os.environ.get("REFRESH_INTERVAL", "300"))  # default 5 minutes
-SERVICE_ACCOUNT_FILE = os.environ.get("SERVICE_ACCOUNT_FILE", "/var/secrets/google/service_account.json")
 
 PAGE_TITLE = os.environ.get("PAGE_TITLE", "web-gsuite-docs")
 PAGE_HEADER = os.environ.get("PAGE_HEADER", "My G Suite Folder")
 
-# In-memory store: file_id => { name, mimeType, iframeUrl }
+# In-memory store: { file_id: { name, mimeType, iframeUrl } }
 PUBLIC_FILES = {}
-
-# --- Helper Functions ---
-
-def get_folder_id_from_url(folder_url: str) -> str:
-    """
-    Extracts the folder ID from a typical Google Drive folder URL:
-      https://drive.google.com/drive/folders/<FOLDER_ID>
-    """
-    match = re.search(r'/folders/([^/]+)', folder_url)
-    if match:
-        return match.group(1)
-    return folder_url
-
-def build_drive_service():
-    """
-    Build Google Drive API service using service account credentials.
-    """
-    credentials = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE,
-        scopes=['https://www.googleapis.com/auth/drive.readonly']
-    )
-    return build('drive', 'v3', credentials=credentials)
 
 def generate_iframe_url(file_id, mime_type):
     """
@@ -57,54 +31,53 @@ def generate_iframe_url(file_id, mime_type):
         # Google Slides
         return f"https://docs.google.com/presentation/d/{file_id}/preview"
     else:
-        # For non-Google file types (PDF, images, etc.), no direct iframe preview
         return None
 
-def fetch_public_files_from_folder(folder_url):
+def load_files_from_json():
     """
-    Use the Drive API to list files in the folder, build 'iframeUrl' if applicable.
+    Load JSON from DATA_JSON_PATH and build the in-memory PUBLIC_FILES dict.
+    JSON structure: [
+      { "id": "<file_id>", "name": "<file_name>", "mimeType": "<mime_type>" },
+      ...
+    ]
     """
-    folder_id = get_folder_id_from_url(folder_url)
-    drive_service = build_drive_service()
+    global PUBLIC_FILES
+
+    if not os.path.exists(DATA_JSON_PATH):
+        print(f"[WARNING] JSON file not found at {DATA_JSON_PATH}. Using empty list.")
+        PUBLIC_FILES = {}
+        return
+
+    try:
+        with open(DATA_JSON_PATH, "r") as f:
+            files_list = json.load(f)
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"[ERROR] Could not load/parse JSON file: {e}")
+        PUBLIC_FILES = {}
+        return
 
     file_map = {}
-    try:
-        query = f"'{folder_id}' in parents and trashed=false"
-        response = drive_service.files().list(
-            q=query,
-            fields="files(id, name, mimeType)"
-        ).execute()
-
-        for file_info in response.get('files', []):
-            fid = file_info['id']
-            fname = file_info['name']
-            mime_type = file_info['mimeType']
-
-            iframe_url = generate_iframe_url(fid, mime_type)
-
+    for entry in files_list:
+        fid = entry.get("id")
+        fname = entry.get("name", "Untitled")
+        mime_type = entry.get("mimeType", "")
+        if fid:
             file_map[fid] = {
                 "name": fname,
                 "mimeType": mime_type,
-                "iframeUrl": iframe_url
+                "iframeUrl": generate_iframe_url(fid, mime_type)
             }
-    except HttpError as err:
-        print(f"[ERROR] Failed to list files from folder {folder_id}: {err}")
 
-    return file_map
+    PUBLIC_FILES = file_map
 
-def refresh_file_list():
+def background_refresh_loop():
     """
-    Background thread to periodically refresh the file list from Google Drive.
+    Runs in a background thread, periodically re-loading the JSON file.
     """
-    global PUBLIC_FILES
     while True:
-        try:
-            print(f"[refresh_file_list] Refreshing files from: {GSUITE_FOLDER_URL}")
-            PUBLIC_FILES = fetch_public_files_from_folder(GSUITE_FOLDER_URL)
-            print("[refresh_file_list] Refreshed successfully.")
-        except Exception as e:
-            print(f"[refresh_file_list] Error: {e}")
-
+        print("[refresh] Reloading JSON file...")
+        load_files_from_json()
+        print("[refresh] Reloaded successfully.")
         time.sleep(REFRESH_INTERVAL)
 
 # --- Flask Routes ---
@@ -112,7 +85,7 @@ def refresh_file_list():
 @app.route("/")
 def index():
     """
-    Lists all files found in the folder. 
+    Lists all files from the in-memory dict.
     """
     files_data = [(fid, info["name"], info["mimeType"]) for fid, info in PUBLIC_FILES.items()]
     return render_template(
@@ -125,7 +98,7 @@ def index():
 @app.route("/view/<file_id>")
 def view_file(file_id):
     """
-    If the file is a GDoc/Sheet/Slide, embed in an iframe. Otherwise, show a note.
+    If the file is Google Docs/Sheets/Slides, embed in an iframe. Otherwise, show a note.
     """
     file_data = PUBLIC_FILES.get(file_id)
     if not file_data:
@@ -140,11 +113,13 @@ def view_file(file_id):
         iframe_url=file_data["iframeUrl"]
     )
 
-# --- Main Entrypoint ---
 if __name__ == "__main__":
-    # Start background refresh thread
-    refresh_thread = threading.Thread(target=refresh_file_list, daemon=True)
+    # Load once at startup:
+    load_files_from_json()
+
+    # Start background thread to refresh every REFRESH_INTERVAL:
+    refresh_thread = threading.Thread(target=background_refresh_loop, daemon=True)
     refresh_thread.start()
 
-    # Run the dev server (for production, use Gunicorn or similar)
+    # Run dev server
     app.run(host="0.0.0.0", port=8080, debug=True)
