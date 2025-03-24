@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ page_title }} - {{ file_name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <header>
+      <h1>{{ page_header }}</h1>
+    </header>
+
+    <section class="content">
+      <h2>{{ file_name }}</h2>
+      {% if iframe_url %}
+        <!-- Embed doc in an iframe with original formatting -->
+        <iframe 
+          src="{{ iframe_url }}"
+          width="100%"
+          height="600"
+          style="border: none;">
+        </iframe>
+      {% else %}
+        <p>This file type ({{ mime_type }}) is not directly embeddable.</p>
+        <p>Provide a direct download link or other approach.</p>
+      {% endif %}
+      <p><a href="{{ url_for('index') }}">Back to List</a></p>
+    </section>
+  </body>
+</html>

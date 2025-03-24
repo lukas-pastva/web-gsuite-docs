@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ page_title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <header>
+      <h1>{{ page_header }}</h1>
+    </header>
+
+    <section class="content">
+      <h2>Available Files in Folder</h2>
+      {% if files_data %}
+        <ul class="file-list">
+          {% for file_id, file_name, mime_type in files_data %}
+          <li>
+            <a href="{{ url_for('view_file', file_id=file_id) }}">{{ file_name }}</a>
+            <span class="mime">({{ mime_type }})</span>
+          </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No files found in the folder.</p>
+      {% endif %}
+    </section>
+  </body>
+</html>
