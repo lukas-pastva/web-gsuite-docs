@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>{{ page_title }}</title>
-    <!-- Responsive design for mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   </head>
@@ -12,20 +11,25 @@
     </header>
 
     <section class="content">
-      {% if files_data %}
-        <nav class="hop-menu">
-          <ul>
-            {% for slug, title, url in files_data %}
-              <li>
-                <!-- Buttons linking to the page for that slug -->
-                <a class="button" href="{{ url_for('view_file', slug=slug) }}">
-                  {{ title }}
-                </a>
-              </li>
-            {% endfor %}
-          </ul>
-        </nav>
-      {% else %}
+      <!-- Hop Menu (includes "Home" button + links for each file) -->
+      <nav class="hop-menu">
+        <ul>
+          <li>
+            <!-- "Home" button linking to the environment-defined HOME_URL -->
+            <a class="button" href="{{ home_url }}">Home</a>
+          </li>
+          {% for slug, title, url in files_data %}
+            <li>
+              <a class="button" href="{{ url_for('view_file', slug=slug) }}">
+                {{ title }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
+
+      <!-- If no data, or if you want to show more content, etc. -->
+      {% if not files_data %}
         <p>No links found in the JSON file.</p>
       {% endif %}
     </section>

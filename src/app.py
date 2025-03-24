@@ -18,38 +18,41 @@ REFRESH_INTERVAL = int(os.environ.get("REFRESH_INTERVAL", "300"))  # default 5 m
 PAGE_TITLE = os.environ.get("PAGE_TITLE", "web-gsuite-docs")
 PAGE_HEADER = os.environ.get("PAGE_HEADER", "My G Suite Folder")
 
-# Dictionary keyed by slug, e.g. { "mydocument-2023": {...}, ... }
+# The "Home" button will link to this URL (e.g. your intranet or any external site).
+HOME_URL = os.environ.get("HOME_URL", "https://example.com")
+
+# We'll store file data in a dict keyed by slug, e.g.:
+#   PUBLIC_FILES = {
+#       "mydoc-2023": { "title": "My Doc - 2023", "url": "...", "iframeUrl": "..." },
+#       ...
+#   }
 PUBLIC_FILES = {}
 
 def slugify(title: str) -> str:
     """
-    Convert to lowercase, keep letters, digits, underscores (_), dashes (-), and spaces.
-    Then remove all spaces (with no replacement), preserving any dashes.
-    e.g. "My Doc - 2023!" -> "mydoc-2023"
+    Lowercase the title, keep letters, digits, underscores, dashes, and spaces.
+    Then remove spaces entirely, preserving dashes.
+    E.g. "My Doc - 2023!" -> "mydoc-2023"
     """
     s = title.lower()
-    # Remove all chars except letters, digits, underscores, dashes, and spaces
-    s = re.sub(r'[^a-z0-9_\-\s]+', '', s)
-    # Remove spaces entirely
-    s = re.sub(r'\s+', '', s)
-    # Strip leading/trailing dashes
-    s = s.strip('-')
+    s = re.sub(r'[^a-z0-9_\-\s]+', '', s)  # remove non-allowed chars
+    s = re.sub(r'\s+', '', s)             # remove spaces
+    s = s.strip('-')                      # strip leading/trailing dashes
     return s
 
 def maybe_add_embedded_param(url: str) -> str:
     """
-    If the URL appears to be a published Google Doc, Slide, or other /pub link,
-    and doesn't already have ?embedded=true, append it for iframe embedding.
+    If it's a published Google Doc (with /pub) and doesn't have ?embedded=true, append it.
     """
     if "docs.google.com" in url and "/pub" in url:
         if "embedded=true" not in url:
-            separator = '&' if '?' in url else '?'
-            return url + separator + "embedded=true"
+            sep = '&' if '?' in url else '?'
+            return url + sep + "embedded=true"
     return url
 
 def generate_qr_code(url: str) -> str:
     """
-    Generate a QR code for the given URL and return it as a 'data:image/png;base64,...' string.
+    Generate a QR code for the given URL, return as data:image/png;base64,...
     """
     qr_img = qrcode.make(url)
     buffer = io.BytesIO()
@@ -59,8 +62,7 @@ def generate_qr_code(url: str) -> str:
 
 def load_files_from_json():
     """
-    Load JSON from DATA_JSON_PATH (an array of { "title": "...", "url": "..." }),
-    building a dict keyed by slug.
+    Load the JSON from DATA_JSON_PATH, building a dict keyed by slug.
     """
     global PUBLIC_FILES
 
@@ -97,7 +99,7 @@ def load_files_from_json():
 
 def background_refresh_loop():
     """
-    Runs in a background thread, periodically re-loading the JSON file.
+    Periodically refresh the JSON file in a background thread.
     """
     while True:
         print("[refresh] Reloading JSON file...")
@@ -110,36 +112,39 @@ def background_refresh_loop():
 @app.route("/")
 def index():
     """
-    Home page: show a "hop menu" of buttons to each file's page.
+    The home page: shows the full hop menu (buttons) for all files,
+    plus a "Home" button that links to HOME_URL.
     """
     files_data = [(slug, info["title"], info["url"])
                   for slug, info in PUBLIC_FILES.items()]
-    # If you want them sorted by title:
+    # Sort if desired:
     # files_data.sort(key=lambda x: x[1].lower())
 
     return render_template(
         "index.html",
         page_title=PAGE_TITLE,
         page_header=PAGE_HEADER,
-        files_data=files_data
+        files_data=files_data,
+        home_url=HOME_URL
     )
 
 @app.route("/<slug>")
 def view_file(slug):
     """
-    View page for a given slug: shows an iframe (if applicable) plus a QR code in bottom-right.
+    The sub-page for a given slug, also includes the same hop menu plus "Home" button.
+    QR code in the bottom-right corner for the full https URL of this page.
     """
     file_data = PUBLIC_FILES.get(slug)
     if not file_data:
         return f"File slug '{slug}' not found in JSON."
 
-    # Build a full HTTPS URL for the current route
-    # e.g. "https://mydomain.com/my-file"
-    # If the request is not already https, replace http with https in the scheme:
+    # Build full https URL
     full_url = request.url.replace("http://", "https://")
-    
-    # Generate QR code
     qr_code_data_uri = generate_qr_code(full_url)
+
+    # We'll also pass the same hop menu
+    files_data = [(s, info["title"], info["url"])
+                  for s, info in PUBLIC_FILES.items()]
 
     return render_template(
         "view_file.html",
@@ -147,16 +152,14 @@ def view_file(slug):
         page_header=PAGE_HEADER,
         file_title=file_data["title"],
         embed_url=file_data["iframeUrl"],
-        qr_code_data_uri=qr_code_data_uri
+        qr_code_data_uri=qr_code_data_uri,
+        files_data=files_data,
+        home_url=HOME_URL
     )
 
 if __name__ == "__main__":
-    # Load once at startup
     load_files_from_json()
-
-    # Start background reloader
     refresh_thread = threading.Thread(target=background_refresh_loop, daemon=True)
     refresh_thread.start()
 
-    # Run Flask
     app.run(host="0.0.0.0", port=8080, debug=True)

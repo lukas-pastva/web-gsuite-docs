@@ -4,9 +4,6 @@ body {
   font-family: Arial, sans-serif;
   background: #f9f9f9;
   color: #333;
-  /* Let us ensure no overlap for the QR in certain cases:
-     We'll position the .content relative so the QR code can
-     anchor to the bottom-right of .content specifically. */
 }
 
 header {
@@ -30,7 +27,7 @@ h1 {
   border-radius: 4px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 
-  position: relative; /* so .qr-code can be absolutely positioned inside */
+  position: relative; /* so .qr-code can anchor to the bottom-right */
 }
 
 /* The "hop menu" nav */
@@ -69,7 +66,7 @@ nav.hop-menu a.button:hover {
   background-color: #e0e0e0;
 }
 
-/* The QR code at bottom-right of .content */
+/* The QR code at the bottom-right of .content */
 .qr-code {
   position: absolute;
   bottom: 10px;

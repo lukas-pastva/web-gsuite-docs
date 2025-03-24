@@ -11,9 +11,25 @@
     </header>
 
     <section class="content">
+      <!-- Hop Menu (includes "Home" + all file links) -->
+      <nav class="hop-menu">
+        <ul>
+          <li>
+            <a class="button" href="{{ home_url }}">Home</a>
+          </li>
+          {% for slug, title, url in files_data %}
+            <li>
+              <a class="button" href="{{ url_for('view_file', slug=slug) }}">
+                {{ title }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
+
       <h2>{{ file_title }}</h2>
+
       {% if embed_url %}
-        <!-- Try embedding the published or public URL in an iframe -->
         <iframe 
           src="{{ embed_url }}"
           width="100%"
@@ -24,11 +40,8 @@
         <p>No embed URL available. Possibly not a Google Doc or is missing a link.</p>
       {% endif %}
 
-      <p><a href="{{ url_for('index') }}">Back to Menu</a></p>
-
-      <!-- The QR code image in the bottom-right corner -->
-      <img src="{{ qr_code_data_uri }}" alt="QR Code"
-           class="qr-code">
+      <!-- The QR code in bottom-right corner -->
+      <img src="{{ qr_code_data_uri }}" alt="QR Code" class="qr-code">
     </section>
   </body>
 </html>
