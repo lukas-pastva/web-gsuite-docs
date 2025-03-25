@@ -2,13 +2,13 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{{ page_title }} - {{ file_title }}</title>
+    <title>{{ file_title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   </head>
   <body>
     <header>
-      <h1>{{ page_header }}</h1>
+      <h1>{{ file_title }}</h1>
       <label for="toggle-menu" class="menu-icon">&#9776;</label>
       <input type="checkbox" id="toggle-menu" />
     </header>

@@ -111,21 +111,19 @@ nav.hop-menu a.button:hover {
     display: none;
   }
   
-  /* When toggled (checkbox checked), show it */
+  /* When toggled (checkbox checked), show it as inline-flex so items line up */
   #toggle-menu:checked ~ nav.hop-menu ul {
-    display: block;
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
   }
 
-  /* The nav items become vertical with spacing */
-  nav.hop-menu ul {
-    display: block;
-    margin: 1rem 0;
-  }
   nav.hop-menu ul li {
-    margin: 0.5rem 0;
+    margin: 0; /* if you want some spacing, use margin:0.25rem or 0.5rem, etc. */
   }
 
-  /* The QR code smaller */
+  /* Make the QR code smaller on mobile */
   .qr-code {
     width: 80px;
     height: 80px;
