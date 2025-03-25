@@ -1,93 +1,99 @@
-/* Base styling */
-body {
+/* General reset / base */
+* {
+  box-sizing: border-box;
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f9f9f9;
-  color: #333;
+  padding: 0;
 }
 
+body {
+  margin: 0;
+  font-family: Georgia, serif; /* A classic serif for a rustic vibe */
+  /* A gentle greenish gradient background */
+  background: linear-gradient(135deg, #dfeadc 0%, #f7f3ec 100%);
+  color: #2f2f2f;
+}
+
+/* Header with a warm, wood-like tone */
 header {
-  background: #444;
+  background: #5f4b32; /* warm brown */
   color: #fff;
-  padding: 1rem;
+  padding: 1.5rem;
   text-align: center;
 }
 
-h1 {
+header h1 {
   margin: 0;
+  font-size: 1.8rem;
 }
 
-/* Container: wide at 1005px max */
+/* Content container */
 .content {
   margin: 2rem auto;
-  width: 100%;
-  max-width: 1005px;
+  width: 90%;
+  max-width: 1000px;
   background: #fff;
-  padding: 1rem 2rem;
-  border-radius: 4px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  padding: 1.5rem 2rem;
+  border-radius: 6px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 
-  position: relative; /* so .qr-code can anchor to the bottom-right */
+  position: relative; /* for anchoring the .qr-code if needed */
 }
 
-/* The "hop menu" nav */
+/* Hop Menu: a simple horizontal or wrapped nav */
 nav.hop-menu {
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-radius: 4px;
+  margin-bottom: 1.5rem;
   text-align: center;
 }
 
 nav.hop-menu ul {
   list-style: none;
-  margin: 0;
   padding: 0;
-
   display: inline-flex;
   flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
 }
 
-nav.hop-menu li {
-  margin: 0.25rem;
-}
-
-/* Buttons in hop menu */
+/* Buttons in the hop menu */
 nav.hop-menu a.button {
   display: inline-block;
   padding: 0.5rem 1rem;
   text-decoration: none;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #f3f3f3;
+  border: 2px solid #8d7754;
+  border-radius: 5px;
+  background-color: #e9e0d0;
+  color: #2f2f2f;
+  font-weight: bold;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 nav.hop-menu a.button:hover {
-  background-color: #e0e0e0;
+  background-color: #dbc8aa;
 }
 
-/* The QR code at the bottom-right of .content */
+/* The QR code at bottom-right corner (if used) */
 .qr-code {
   position: absolute;
   bottom: 10px;
   right: 10px;
   width: 110px;
   height: 110px;
-  border: 2px solid #ccc;
+  border: 2px solid #8d7754;
   border-radius: 4px;
 }
 
-/* Media query for smaller screens */
+/* Responsive adjustments */
 @media (max-width: 600px) {
   .content {
-      width: 95%;
-      padding: 1rem;
+    width: 95%;
+    padding: 1rem;
   }
   nav.hop-menu ul {
-      display: block; /* vertical on small devices */
+    display: block; /* Make nav vertical on small devices */
   }
   .qr-code {
-      width: 80px;
-      height: 80px;
+    width: 80px;
+    height: 80px;
   }
 }

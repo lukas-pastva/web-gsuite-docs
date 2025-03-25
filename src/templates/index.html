@@ -1,8 +1,10 @@
+<!-- File: templates/index.html -->
 <!DOCTYPE html>
 <html>
   <head>
     <title>{{ page_title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Link your updated style.css -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   </head>
   <body>
@@ -25,11 +27,18 @@
               </a>
             </li>
           {% endfor %}
+          <!-- Add a direct link to All QR Codes -->
+          <li>
+            <a class="button" href="{{ url_for('all_qr_codes') }}">All QR Codes</a>
+          </li>
         </ul>
       </nav>
 
-      <!-- If no data, or if you want to show more content, etc. -->
-      {% if not files_data %}
+      {% if files_data %}
+        <!-- Show a little welcome text if we do have files -->
+        <p>Select a file above to view its embedded doc or to see its QR code.</p>
+      {% else %}
+        <!-- If no data in the JSON -->
         <p>No links found in the JSON file.</p>
       {% endif %}
     </section>
