@@ -1,0 +1,24 @@
+<!-- File: templates/qr_only.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>QR Code</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      /* Minimal inline style to center the image */
+      html, body {
+        margin: 0; 
+        padding: 0; 
+        height: 100%;
+      }
+      body {
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <img src="{{ qr_code_data_uri }}" alt="QR Code">
+  </body>
+</html>

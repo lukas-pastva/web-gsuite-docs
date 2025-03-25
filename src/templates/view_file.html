@@ -1,3 +1,4 @@
+<!-- File: templates/view_file.html -->
 <!DOCTYPE html>
 <html>
   <head>
@@ -24,6 +25,10 @@
               </a>
             </li>
           {% endfor %}
+          <!-- Also link to the "All QR Codes" page at the end of the menu -->
+          <li>
+            <a class="button" href="{{ url_for('all_qr_codes') }}">All QR Codes</a>
+          </li>
         </ul>
       </nav>
 
@@ -40,8 +45,10 @@
         <p>No embed URL available. Possibly not a Google Doc or is missing a link.</p>
       {% endif %}
 
-      <!-- The QR code in bottom-right corner -->
-      <img src="{{ qr_code_data_uri }}" alt="QR Code" class="qr-code">
+      <!-- The QR code in bottom-right corner - now clickable -->
+      <a href="{{ url_for('view_file_qr_only', slug=slug) }}" target="_blank">
+        <img src="{{ qr_code_data_uri }}" alt="QR Code" class="qr-code">
+      </a>
     </section>
   </body>
 </html>

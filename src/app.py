@@ -7,7 +7,7 @@ import io
 import base64
 
 import qrcode
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, url_for
 
 app = Flask(__name__)
 
@@ -18,22 +18,11 @@ REFRESH_INTERVAL = int(os.environ.get("REFRESH_INTERVAL", "300"))  # default 5 m
 PAGE_TITLE = os.environ.get("PAGE_TITLE", "web-gsuite-docs")
 PAGE_HEADER = os.environ.get("PAGE_HEADER", "My G Suite Folder")
 
-# The "Home" button will link to this URL (e.g. your intranet or any external site).
 HOME_URL = os.environ.get("HOME_URL", "https://example.com")
 
-# We'll store file data in a dict keyed by slug, e.g.:
-#   PUBLIC_FILES = {
-#       "mydoc-2023": { "title": "My Doc - 2023", "url": "...", "iframeUrl": "..." },
-#       ...
-#   }
 PUBLIC_FILES = {}
 
 def slugify(title: str) -> str:
-    """
-    Lowercase the title, keep letters, digits, underscores, dashes, and spaces.
-    Then remove spaces entirely, preserving dashes.
-    E.g. "My Doc - 2023!" -> "mydoc-2023"
-    """
     s = title.lower()
     s = re.sub(r'[^a-z0-9_\-\s]+', '', s)  # remove non-allowed chars
     s = re.sub(r'\s+', '', s)             # remove spaces
@@ -41,9 +30,6 @@ def slugify(title: str) -> str:
     return s
 
 def maybe_add_embedded_param(url: str) -> str:
-    """
-    If it's a published Google Doc (with /pub) and doesn't have ?embedded=true, append it.
-    """
     if "docs.google.com" in url and "/pub" in url:
         if "embedded=true" not in url:
             sep = '&' if '?' in url else '?'
@@ -52,7 +38,7 @@ def maybe_add_embedded_param(url: str) -> str:
 
 def generate_qr_code(url: str) -> str:
     """
-    Generate a QR code for the given URL, return as data:image/png;base64,...
+    Generate a QR code (PNG) for the given URL, return it as a data URI (base64).
     """
     qr_img = qrcode.make(url)
     buffer = io.BytesIO()
@@ -61,9 +47,6 @@ def generate_qr_code(url: str) -> str:
     return f"data:image/png;base64,{b64_img}"
 
 def load_files_from_json():
-    """
-    Load the JSON from DATA_JSON_PATH, building a dict keyed by slug.
-    """
     global PUBLIC_FILES
 
     if not os.path.exists(DATA_JSON_PATH):
@@ -98,28 +81,20 @@ def load_files_from_json():
     PUBLIC_FILES = file_map
 
 def background_refresh_loop():
-    """
-    Periodically refresh the JSON file in a background thread.
-    """
     while True:
         print("[refresh] Reloading JSON file...")
         load_files_from_json()
         print("[refresh] Reloaded successfully.")
         time.sleep(REFRESH_INTERVAL)
 
-# --- Flask Routes ---
-
 @app.route("/")
 def index():
     """
-    The home page: shows the full hop menu (buttons) for all files,
-    plus a "Home" button that links to HOME_URL.
+    Home page: shows a button for 'Home' plus links for each file,
+    plus a link for "All QR Codes."
     """
     files_data = [(slug, info["title"], info["url"])
                   for slug, info in PUBLIC_FILES.items()]
-    # Sort if desired:
-    # files_data.sort(key=lambda x: x[1].lower())
-
     return render_template(
         "index.html",
         page_title=PAGE_TITLE,
@@ -131,18 +106,17 @@ def index():
 @app.route("/<slug>")
 def view_file(slug):
     """
-    The sub-page for a given slug, also includes the same hop menu plus "Home" button.
-    QR code in the bottom-right corner for the full https URL of this page.
+    The sub-page for a given file, showing its embedded doc and a clickable QR code.
     """
     file_data = PUBLIC_FILES.get(slug)
     if not file_data:
         return f"File slug '{slug}' not found in JSON."
 
-    # Build full https URL
+    # Build full https URL for this page (for the QR code to encode)
     full_url = request.url.replace("http://", "https://")
     qr_code_data_uri = generate_qr_code(full_url)
 
-    # We'll also pass the same hop menu
+    # We'll pass the same hop menu
     files_data = [(s, info["title"], info["url"])
                   for s, info in PUBLIC_FILES.items()]
 
@@ -154,6 +128,50 @@ def view_file(slug):
         embed_url=file_data["iframeUrl"],
         qr_code_data_uri=qr_code_data_uri,
         files_data=files_data,
+        home_url=HOME_URL
+    )
+
+@app.route("/<slug>/qr_only")
+def view_file_qr_only(slug):
+    """
+    Minimal page that ONLY shows the QR code (no headers/nav).
+    """
+    file_data = PUBLIC_FILES.get(slug)
+    if not file_data:
+        return f"File slug '{slug}' not found."
+
+    # The QR should encode the same 'view_file' route:
+    full_url = url_for('view_file', slug=slug, _external=True)
+    # If you'd rather keep 'https://' always, you could do:
+    # full_url = request.url_root.replace("http://", "https://") + slug
+
+    qr_code_data_uri = generate_qr_code(full_url)
+    return render_template(
+        "qr_only.html",
+        qr_code_data_uri=qr_code_data_uri
+    )
+
+@app.route("/all_qr_codes")
+def all_qr_codes():
+    """
+    Page that shows all files' titles and their QR codes on one page.
+    """
+    # We'll build a list of (slug, title, qr_data_uri).
+    # The QR code for each file points to the main route for that file.
+    files_data = [(s, info["title"], info["url"]) for s, info in PUBLIC_FILES.items()]
+
+    qr_list = []
+    for slug, title, _ in files_data:
+        full_url = url_for('view_file', slug=slug, _external=True)
+        qr_data_uri = generate_qr_code(full_url)
+        qr_list.append((slug, title, qr_data_uri))
+
+    return render_template(
+        "all_qr_codes.html",
+        page_title=PAGE_TITLE,
+        page_header=PAGE_HEADER,
+        files_data=files_data,  # for the nav
+        qr_codes=qr_list,       # for the displayed QRs
         home_url=HOME_URL
     )
 

@@ -1,0 +1,51 @@
+<!-- File: templates/all_qr_codes.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ page_title }} - All QR Codes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <header>
+      <h1>{{ page_header }} - All QR Codes</h1>
+    </header>
+
+    <section class="content">
+      <!-- Hop Menu: same nav as other pages -->
+      <nav class="hop-menu">
+        <ul>
+          <li><a class="button" href="{{ home_url }}">Home</a></li>
+          {% for slug, title, url in files_data %}
+            <li>
+              <a class="button" href="{{ url_for('view_file', slug=slug) }}">
+                {{ title }}
+              </a>
+            </li>
+          {% endfor %}
+          <!-- We are already on the "All QR Codes" page, but you can still show it -->
+          <li>
+            <a class="button" href="{{ url_for('all_qr_codes') }}">All QR Codes</a>
+          </li>
+        </ul>
+      </nav>
+
+      <ul style="list-style-type:none; padding:0;">
+        {% for slug, title, qr_data_uri in qr_codes %}
+          <li style="margin-bottom: 2rem;">
+            <strong>{{ title }}</strong>
+            <br>
+            <!-- Make the QR code clickable to the minimal QR-only page -->
+            <a href="{{ url_for('view_file_qr_only', slug=slug) }}" target="_blank">
+              <img 
+                src="{{ qr_data_uri }}" 
+                alt="QR Code" 
+                style="width:120px; height:120px; border:1px solid #ccc; border-radius:4px; margin-top:0.5rem;"
+              >
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  </body>
+</html>
