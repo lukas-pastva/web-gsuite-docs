@@ -7,8 +7,8 @@
 
 body {
   margin: 0;
-  font-family: Georgia, serif; /* A classic serif for a rustic vibe */
-  /* A gentle greenish gradient background */
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  /* Gentle greenish-beige background */
   background: linear-gradient(135deg, #dfeadc 0%, #f7f3ec 100%);
   color: #2f2f2f;
 }
@@ -19,6 +19,7 @@ header {
   color: #fff;
   padding: 1.5rem;
   text-align: center;
+  position: relative; /* so we can position the hamburger icon */
 }
 
 header h1 {
@@ -26,20 +27,22 @@ header h1 {
   font-size: 1.8rem;
 }
 
-/* Content container */
-.content {
-  margin: 2rem auto;
-  width: 90%;
-  max-width: 1000px;
-  background: #fff;
-  padding: 1.5rem 2rem;
-  border-radius: 6px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-
-  position: relative; /* for anchoring the .qr-code if needed */
+/* The "hamburger" icon & checkbox for mobile toggling */
+.menu-icon {
+  display: none;  /* hidden by default on desktop */
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #fff;
 }
 
-/* Hop Menu: a simple horizontal or wrapped nav */
+#toggle-menu {
+  display: none; /* The checkbox is hidden */
+}
+
+/* Navigation container */
 nav.hop-menu {
   margin-bottom: 1.5rem;
   text-align: center;
@@ -47,11 +50,11 @@ nav.hop-menu {
 
 nav.hop-menu ul {
   list-style: none;
-  padding: 0;
-  display: inline-flex;
+  display: inline-flex; /* side-by-side on larger screens */
   flex-wrap: wrap;
   gap: 0.5rem;
   justify-content: center;
+  margin-top: 0.5rem;
 }
 
 /* Buttons in the hop menu */
@@ -72,6 +75,18 @@ nav.hop-menu a.button:hover {
   background-color: #dbc8aa;
 }
 
+/* The main content container */
+.content {
+  margin: 2rem auto;
+  width: 90%;
+  max-width: 1000px;
+  background: #fff;
+  padding: 1.5rem 2rem;
+  border-radius: 6px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  position: relative; /* for anchoring .qr-code if needed */
+}
+
 /* The QR code at bottom-right corner (if used) */
 .qr-code {
   position: absolute;
@@ -83,15 +98,34 @@ nav.hop-menu a.button:hover {
   border-radius: 4px;
 }
 
-/* Responsive adjustments */
+/* MOBILE STYLES (up to 600px) */
 @media (max-width: 600px) {
-  .content {
-    width: 95%;
-    padding: 1rem;
+
+  /* Show hamburger icon */
+  .menu-icon {
+    display: block;
   }
+  
+  /* Hide the menu (the UL) by default unless toggled on */
+  #toggle-menu:not(:checked) ~ nav.hop-menu ul {
+    display: none;
+  }
+  
+  /* When toggled (checkbox checked), show it */
+  #toggle-menu:checked ~ nav.hop-menu ul {
+    display: block;
+  }
+
+  /* The nav items become vertical with spacing */
   nav.hop-menu ul {
-    display: block; /* Make nav vertical on small devices */
+    display: block;
+    margin: 1rem 0;
   }
+  nav.hop-menu ul li {
+    margin: 0.5rem 0;
+  }
+
+  /* The QR code smaller */
   .qr-code {
     width: 80px;
     height: 80px;

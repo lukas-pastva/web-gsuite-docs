@@ -9,29 +9,29 @@
   <body>
     <header>
       <h1>{{ page_header }}</h1>
+      <label for="toggle-menu" class="menu-icon">&#9776;</label>
+      <input type="checkbox" id="toggle-menu" />
     </header>
 
-    <section class="content">
-      <!-- Hop Menu (includes "Home" + all file links) -->
-      <nav class="hop-menu">
-        <ul>
+    <nav class="hop-menu">
+      <ul>
+        <li>
+          <a class="button" href="{{ home_url }}">Home</a>
+        </li>
+        {% for s, title, fileurl in files_data %}
           <li>
-            <a class="button" href="{{ home_url }}">Home</a>
+            <a class="button" href="{{ url_for('view_file', slug=s) }}">
+              {{ title }}
+            </a>
           </li>
-          {% for slug, title, url in files_data %}
-            <li>
-              <a class="button" href="{{ url_for('view_file', slug=slug) }}">
-                {{ title }}
-              </a>
-            </li>
-          {% endfor %}
-          <!-- Also link to the "All QR Codes" page at the end of the menu -->
-          <li>
-            <a class="button" href="{{ url_for('all_qr_codes') }}">All QR Codes</a>
-          </li>
-        </ul>
-      </nav>
+        {% endfor %}
+        <li>
+          <a class="button" href="{{ url_for('all_qr_codes') }}">All QR Codes</a>
+        </li>
+      </ul>
+    </nav>
 
+    <section class="content">
       <h2>{{ file_title }}</h2>
 
       {% if embed_url %}
@@ -42,10 +42,10 @@
           style="border: none;">
         </iframe>
       {% else %}
-        <p>No embed URL available. Possibly not a Google Doc or is missing a link.</p>
+        <p>No embed URL available. Possibly not a Google Doc or missing a link.</p>
       {% endif %}
 
-      <!-- The QR code in bottom-right corner - now clickable -->
+      <!-- The QR code in bottom-right corner -->
       <a href="{{ url_for('view_file_qr_only', slug=slug) }}" target="_blank">
         <img src="{{ qr_code_data_uri }}" alt="QR Code" class="qr-code">
       </a>

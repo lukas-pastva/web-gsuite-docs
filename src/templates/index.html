@@ -4,41 +4,41 @@
   <head>
     <title>{{ page_title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Link your updated style.css -->
+    <!-- Link to updated CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   </head>
   <body>
+    <!-- Header with the "hamburger" icon + checkbox -->
     <header>
       <h1>{{ page_header }}</h1>
+      <label for="toggle-menu" class="menu-icon">&#9776;</label>
+      <input type="checkbox" id="toggle-menu" />
     </header>
 
-    <section class="content">
-      <!-- Hop Menu (includes "Home" button + links for each file) -->
-      <nav class="hop-menu">
-        <ul>
+    <!-- Hop Menu (includes "Home" button + all file links + "All QR Codes") -->
+    <nav class="hop-menu">
+      <ul>
+        <li>
+          <!-- "Home" button linking to environment-defined HOME_URL -->
+          <a class="button" href="{{ home_url }}">Home</a>
+        </li>
+        {% for slug, title, url in files_data %}
           <li>
-            <!-- "Home" button linking to the environment-defined HOME_URL -->
-            <a class="button" href="{{ home_url }}">Home</a>
+            <a class="button" href="{{ url_for('view_file', slug=slug) }}">
+              {{ title }}
+            </a>
           </li>
-          {% for slug, title, url in files_data %}
-            <li>
-              <a class="button" href="{{ url_for('view_file', slug=slug) }}">
-                {{ title }}
-              </a>
-            </li>
-          {% endfor %}
-          <!-- Add a direct link to All QR Codes -->
-          <li>
-            <a class="button" href="{{ url_for('all_qr_codes') }}">All QR Codes</a>
-          </li>
-        </ul>
-      </nav>
+        {% endfor %}
+        <li>
+          <a class="button" href="{{ url_for('all_qr_codes') }}">All QR Codes</a>
+        </li>
+      </ul>
+    </nav>
 
+    <section class="content">
       {% if files_data %}
-        <!-- Show a little welcome text if we do have files -->
         <p>Select a file above to view its embedded doc or to see its QR code.</p>
       {% else %}
-        <!-- If no data in the JSON -->
         <p>No links found in the JSON file.</p>
       {% endif %}
     </section>
