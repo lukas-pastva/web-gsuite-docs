@@ -128,7 +128,8 @@ def view_file(slug):
         embed_url=file_data["iframeUrl"],
         qr_code_data_uri=qr_code_data_uri,
         files_data=files_data,
-        home_url=HOME_URL
+        home_url=HOME_URL,
+        slug=slug
     )
 
 @app.route("/<slug>/qr_only")
@@ -142,9 +143,6 @@ def view_file_qr_only(slug):
 
     # The QR should encode the same 'view_file' route:
     full_url = url_for('view_file', slug=slug, _external=True)
-    # If you'd rather keep 'https://' always, you could do:
-    # full_url = request.url_root.replace("http://", "https://") + slug
-
     qr_code_data_uri = generate_qr_code(full_url)
     return render_template(
         "qr_only.html",
@@ -157,7 +155,6 @@ def all_qr_codes():
     Page that shows all files' titles and their QR codes on one page.
     """
     # We'll build a list of (slug, title, qr_data_uri).
-    # The QR code for each file points to the main route for that file.
     files_data = [(s, info["title"], info["url"]) for s, info in PUBLIC_FILES.items()]
 
     qr_list = []
