@@ -93,8 +93,10 @@ def index():
     Home page: shows a button for 'Home' plus links for each file,
     plus a link for "All QR Codes."
     """
-    files_data = [(slug, info["title"], info["url"])
-                  for slug, info in PUBLIC_FILES.items()]
+    files_data = sorted(
+        [(slug, info["title"], info["url"]) for slug, info in PUBLIC_FILES.items()],
+        key=lambda item: item[1].lower()
+    )
     return render_template(
         "index.html",
         page_title=PAGE_TITLE,
@@ -112,13 +114,14 @@ def view_file(slug):
     if not file_data:
         return f"File slug '{slug}' not found in JSON."
 
-    # Build full https URL for this page (for the QR code to encode)
     full_url = request.url.replace("http://", "https://")
     qr_code_data_uri = generate_qr_code(full_url)
 
-    # We'll pass the same hop menu
-    files_data = [(s, info["title"], info["url"])
-                  for s, info in PUBLIC_FILES.items()]
+    # Sort the hop menu items alphabetically by title
+    files_data = sorted(
+        [(s, info["title"], info["url"]) for s, info in PUBLIC_FILES.items()],
+        key=lambda item: item[1].lower()
+    )
 
     return render_template(
         "view_file.html",
@@ -154,8 +157,10 @@ def all_qr_codes():
     """
     Page that shows all files' titles and their QR codes on one page.
     """
-    # We'll build a list of (slug, title, qr_data_uri).
-    files_data = [(s, info["title"], info["url"]) for s, info in PUBLIC_FILES.items()]
+    files_data = sorted(
+        [(s, info["title"], info["url"]) for s, info in PUBLIC_FILES.items()],
+        key=lambda item: item[1].lower()
+    )
 
     qr_list = []
     for slug, title, _ in files_data:
@@ -167,8 +172,8 @@ def all_qr_codes():
         "all_qr_codes.html",
         page_title=PAGE_TITLE,
         page_header=PAGE_HEADER,
-        files_data=files_data,  # for the nav
-        qr_codes=qr_list,       # for the displayed QRs
+        files_data=files_data,
+        qr_codes=qr_list,
         home_url=HOME_URL
     )
 
