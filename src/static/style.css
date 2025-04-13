@@ -1,290 +1,131 @@
-body, html {
-	font-family: 'Open Sans', sans-serif;
-	text-rendering: optimizeLegibility !important;
-	-webkit-font-smoothing: antialiased !important;
-	color: #444;
-	font-weight: 400;
-	width: 100% !important;
-	height: 100% !important;
-	margin: 0;
-	padding: 0;
-}
-  
-h2 {
-	font-family: 'Montserrat', sans-serif;
-	margin: 0 0 20px 0;
-	font-weight: 700;
-	font-size: 32px;
-	color: #333;
-}
-  
-h3 {
-	font-family: 'Montserrat', sans-serif;
-	font-size: 22px;
-	font-weight: 700;
-	color: #333;
-}
-  
-h4 {
-	font-size: 18px;
-}
-  
-p {
-	font-size: 15px;
-	line-height: 24px;
-}
-  
-a {
-	color: #653b00; /* Slightly darker brown */
-	font-weight: 400;
-}
-  
-a:hover,
-a:focus {
-	text-decoration: none;
-	color: #3f2300; /* Even darker on hover */
+/* General reset / base */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-/* Custom button style */
-.btn-custom {
-	text-transform: uppercase;
-	color: #fff;
-	background-color: #653b00; /* Brown button background */
-	padding: 14px 20px;
-	letter-spacing: 1px;
-	margin: 0;
-	font-size: 14px;
-	font-weight: 600;
-	border-radius: 4px;
-	transition: all 0.3s;
-}
-  
-.btn-custom:hover,
-.btn-custom:focus,
-.btn-custom.focus,
-.btn-custom:active,
-.btn-custom.active {
-	color: #fff;
-	background-color: #2d4d2d; /* A greenish variant for hover */
+body {
+  margin: 0;
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  /* Gentle greenish-beige background */
+  background: linear-gradient(135deg, #dfeadc 0%, #f7f3ec 100%);
+  color: #2f2f2f;
 }
 
-/* Navigation */
-#menu {
-	padding: 20px;
-	transition: all 0.8s;
-}
-  
-#menu.navbar-default {
-	background-color: #fdfdfd; 
-	border-color: rgba(231, 231, 231, 0);
-	box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+/* Header with a warm, wood-like tone */
+header {
+  background: #5f4b32; /* warm brown */
+  color: #fff;
+  padding: 1.5rem;
+  text-align: center;
+  position: relative; /* so we can position the hamburger icon */
 }
 
-/* New wrapper to group navbar-brand and social icons */
-.navbar-brand-wrap {
-	display: inline-block;
-	vertical-align: middle;
+header h1 {
+  margin: 0;
+  font-size: 1.8rem;
 }
 
-/* Adjust the navbar-brand appearance */
-#menu a.navbar-brand {
-	font-family: 'Montserrat', sans-serif;
-	font-size: 32px;
-	font-weight: 700;
-	color: #653b00;
-	text-transform: uppercase;
-	letter-spacing: -1px;
+/* The "hamburger" icon & checkbox for mobile toggling */
+.menu-icon {
+  display: none;  /* hidden by default on desktop */
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #fff;
 }
 
-/* Social icons styling in header: now inline and bigger */
-.top-social-icons {
-	display: inline-block;
-	vertical-align: middle;
-	margin-left: 20px;
-}
-.top-social-icons a {
-	margin-left: 10px;
-	display: inline-block;
-	color: #653b00;
-	text-decoration: none;
-	font-size: 32px; /* Increased size for bigger icons */
-}
-.top-social-icons a:hover {
-	color: #2d4d2d;
+#toggle-menu {
+  display: none; /* The checkbox is hidden */
 }
 
-/* Intro Section */
-.intro {
-	display: table;
-	width: 100%;
-	background: url("../img/intro-bg.jpg") top center no-repeat;
-	background-color: #d1c9c1; /* fallback if image not loaded */
-	background-size: cover;
-}
-  
-.intro .overlay {
-	background: rgba(0, 0, 0, 0.3);
-}
-  
-.intro-text h1 {
-	font-family: 'Montserrat', sans-serif;
-	color: #fff;
-	font-size: 48px;
-	font-weight: 700;
-	margin-bottom: 15px;
-	text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-}
-  
-.intro-text p {
-	color: #fff;
-	font-size: 17px;
-	line-height: 28px;
-	max-width: 600px;
-	margin: 0 auto 30px auto;
-	background: rgba(0, 0, 0, 0.4);
-	padding: 10px;
+/* Navigation container */
+nav.hop-menu {
+  margin-bottom: 1.5rem;
+  text-align: center;
 }
 
-/* Portfolio / Gallery */
-#portfolio {
-	padding: 80px 0;
-	background: #fdfdfd;
-}
-  
-.hover-bg {
-	overflow: hidden;
-	position: relative;
-}
-  
-.hover-bg .hover-text {
-	position: absolute;
-	text-align: center;
-	margin: 0 auto;
-	color: #fff;
-	background: rgba(0, 0, 0, 0.4); /* Lighter overlay background */
-	padding: 30% 0 0 0;
-	height: 100%;
-	width: 100%;
-	opacity: 0;
-	transition: all 0.5s;
-}
-  
-.hover-bg:hover .hover-text {
-	opacity: 1;
-}
-  
-.hover-bg .hover-text h4 {
-	opacity: 0;
-	font-size: 17px;
-	letter-spacing: 1px;
-	font-weight: 400;
-	text-transform: uppercase;
-	transition: all 0.3s;
-	transform: translateY(100%);
-}
-  
-.hover-bg:hover .hover-text h4 {
-	opacity: 1;
-	transform: translateY(0);
+nav.hop-menu ul {
+  list-style: none;
+  display: inline-flex; /* side-by-side on larger screens */
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 0.5rem;
 }
 
-/* Contact & Info sections */
-#contact {
-	padding: 100px 0 60px 0;
-	background: #2f3d2f; /* slightly greenish/darker background */
-	color: #fff;  /* Contact text set to pure white */
-}
-  
-#contact h2 {
-	color: #fff;
-}
-  
-#contact .form-control {
-	display: block;
-	width: 100%;
-	padding: 6px 12px;
-	font-size: 16px;
-	color: #444;
-	background-color: #fff;
-	border: 1px solid #ddd;
-	-webkit-box-shadow: none;
-	box-shadow: none;
-	transition: none;
-}
-  
-#contact .form-control:focus {
-	border-color: #999;
-	outline: 0;
-	box-shadow: transparent;
-}
-  
-#contact .contact-item span {
-	color: #fff;
-	display: block;
-}
-  
-/* Footer */
-#footer {
-	background: #333;
-	padding: 30px 0;
-	text-align: center;
-}
-  
-#footer p {
-	color: #fff;
-	font-size: 14px;
-}
-  
-#footer a {
-	color: #fff;
+/* Buttons in the hop menu */
+nav.hop-menu a.button {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  border: 2px solid #8d7754;
+  border-radius: 5px;
+  background-color: #e9e0d0;
+  color: #2f2f2f;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-/* Ensure that any h4 inside the footer is white */
-#contact h4 {
-	color: #fff;
+nav.hop-menu a.button:hover {
+  background-color: #dbc8aa;
 }
 
-/* New styles for the footer social icons */
-.footer-social-icons {
-	background: #222; /* Darker background for footer icons */
-	text-align: center;
-	padding: 10px 0;
+/* The main content container */
+.content {
+  margin: 2rem auto;
+  width: 90%;
+  max-width: 1000px;
+  background: #fff;
+  padding: 1.5rem 2rem;
+  border-radius: 6px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  position: relative; /* for anchoring .qr-code if needed */
 }
 
-.footer-social-icons a {
-	margin: 0 10px;
-	display: inline-block;
-	color: #fff;
-	font-size: 24px;
-	transition: color 0.3s ease;
+/* The QR code at bottom-right corner (if used) */
+.qr-code {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 110px;
+  height: 110px;
+  border: 2px solid #8d7754;
+  border-radius: 4px;
 }
 
-.footer-social-icons a:hover {
-	color: #2d4d2d;
-}
+/* MOBILE STYLES (up to 600px) */
+@media (max-width: 600px) {
 
-/* Testimonials Section */
-#testimonials .testimonial {
-	background: #f9f9f9;
-	padding: 20px;
-	border-radius: 4px;
-	margin-bottom: 20px;
-}
-  
-#testimonials .testimonial p {
-	font-style: italic;
-}
-
-/* Extra styles for other sections remain unchanged */
-.portfolio-item {
-    margin-bottom: 30px;
-}
-
-/* 
-  (Optional additional change for About section if not using inline styles):
-  You could also add a CSS rule such as:
-  
-  .tm-about .section-title {
-      margin-top: 30px;
+  /* Show hamburger icon */
+  .menu-icon {
+    display: block;
   }
-*/
+  
+  /* Hide the menu (the UL) by default unless toggled on */
+  #toggle-menu:not(:checked) ~ nav.hop-menu ul {
+    display: none;
+  }
+  
+  /* When toggled (checkbox checked), show it as inline-flex so items line up */
+  #toggle-menu:checked ~ nav.hop-menu ul {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  nav.hop-menu ul li {
+    margin: 0; /* if you want some spacing, use margin:0.25rem or 0.5rem, etc. */
+  }
+
+  /* Make the QR code smaller on mobile */
+  .qr-code {
+    width: 80px;
+    height: 80px;
+  }
+}
