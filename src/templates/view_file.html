@@ -12,7 +12,6 @@
       <label for="toggle-menu" class="menu-icon">&#9776;</label>
       <input type="checkbox" id="toggle-menu" />
     </header>
-
     <nav class="hop-menu">
       <ul>
         <li>
@@ -25,17 +24,15 @@
             </a>
           </li>
         {% endfor %}
-        <!-- Commented out QR Codes link for menu hiding purposes
+        <!-- The "All QR Codes" link is commented out to hide it
         <li>
           <a class="button" href="{{ url_for('all_qr_codes') }}">All QR Codes</a>
         </li>
         -->
       </ul>
     </nav>
-
     <section class="content">
       <h2>{{ file_title }}</h2>
-
       {% if embed_url %}
         <iframe 
           src="{{ embed_url }}"
@@ -46,7 +43,6 @@
       {% else %}
         <p>No embed URL available. Possibly not a Google Doc or missing a link.</p>
       {% endif %}
-
       <!-- The QR code in bottom-right corner -->
       <a href="{{ url_for('view_file_qr_only', slug=slug) }}" target="_blank">
         <img src="{{ qr_code_data_uri }}" alt="QR Code" class="qr-code">
