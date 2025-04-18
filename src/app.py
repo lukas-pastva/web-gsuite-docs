@@ -8,6 +8,7 @@ import base64
 
 import qrcode
 from flask import Flask, render_template, request, url_for
+from helpers import build_iframe_url
 
 app = Flask(__name__)
 
@@ -35,19 +36,23 @@ def slugify(title: str) -> str:
 
 def build_iframe_url(url: str) -> str:
     """
-    Return a Google‑Docs‑friendly iframe URL **without** the 72 pt padding.
-
-    Strategy:
-      • works only on docs.google.com links that already contain /pub
-      • strips any existing 'embedded=true|false'
-      • appends 'embedded=false'
+    Convert any Google‑Docs link (shared or 'publish to web') to
+    the zero‑padding preview variant.
     """
-    if "docs.google.com" in url and "/pub" in url:
-        # drop any pre‑existing embedded parameter
-        url = re.sub(r'([?&])embedded=(?:true|false)', r'\1', url)
-        url = url.rstrip('?&')
+    if "docs.google.com/document" not in url:
+        return url  # untouched for non‑Docs links
+
+    # 1. Normal share links  …/edit → …/preview
+    url = re.sub(r'/edit(\?.*)?$', '/preview', url)
+
+    # 2. Published links …/pub*  → …/preview
+    url = re.sub(r'/pub.*$',  '/preview', url)
+
+    # Ensure ?rm=minimal is present exactly once
+    if '?rm=minimal' not in url:
         sep = '&' if '?' in url else '?'
-        return f"{url}{sep}embedded=false"   # <-- no padding
+        url = f'{url}{sep}rm=minimal'
+
     return url
 
 
@@ -87,9 +92,9 @@ def load_files_from_json() -> None:
 
         slug = slugify(title)
         file_map[slug] = {
-            "title":      title,
-            "url":        url,
-            "iframeUrl":  build_iframe_url(url)   # ← uses new helper
+            "title": title,
+            "url":   url,
+            "iframeUrl": build_iframe_url(url)
         }
 
     PUBLIC_FILES = file_map
