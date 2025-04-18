@@ -1,131 +1,75 @@
-/* General reset / base */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* ============ Base / existing styles (unchanged) ============ */
+* { box-sizing:border-box; margin:0; padding:0; }
 
 body {
-  margin: 0;
-  /* Changed font-family to Open Sans, lighter text color, and a slightly altered gradient */
-  font-family: "Open Sans", Arial, sans-serif;
-  background: linear-gradient(135deg, #ffffff 0%, #f7f3ec 100%);
-  color: #444;
+  font-family:"Open Sans", Arial, sans-serif;
+  background:linear-gradient(135deg,#ffffff 0%,#f7f3ec 100%);
+  color:#444;
 }
 
-/* Header with updated warm brown tone */
 header {
-  background: #653b00; /* updated from #5f4b32 to a richer brown */
-  color: #fff;
-  padding: 1.5rem;
-  text-align: center;
-  position: relative; /* so we can position the hamburger icon */
+  background:#653b00;
+  color:#fff;
+  padding:1.5rem;
+  text-align:center;
+  position:relative;
 }
 
-header h1 {
-  margin: 0;
-  font-size: 1.8rem;
-}
+header h1 { font-size:1.8rem; }
 
-/* The "hamburger" icon & checkbox for mobile toggling */
-.menu-icon {
-  display: none;  /* hidden by default on desktop */
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  font-size: 2rem;
-  cursor: pointer;
-  color: #fff;
-}
+.menu-icon { display:none; position:absolute; top:1rem; right:1rem; font-size:2rem; cursor:pointer; color:#fff; }
+#toggle-menu { display:none; }
 
-#toggle-menu {
-  display: none; /* The checkbox is hidden */
-}
+nav.hop-menu { margin-bottom:1.5rem; text-align:center; }
+nav.hop-menu ul { list-style:none; display:inline-flex; flex-wrap:wrap; gap:.5rem; justify-content:center; margin-top:.5rem; }
 
-/* Navigation container */
-nav.hop-menu {
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-nav.hop-menu ul {
-  list-style: none;
-  display: inline-flex; /* side-by-side on larger screens */
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
-  margin-top: 0.5rem;
-}
-
-/* Buttons in the hop menu with updated colors */
 nav.hop-menu a.button {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  text-decoration: none;
-  border: 2px solid #653b00; /* updated border color */
-  border-radius: 5px;
-  background-color: #653b00; /* new background to match header */
-  color: #fff;  /* white text for contrast */
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+  display:inline-block; padding:.5rem 1rem; text-decoration:none;
+  border:2px solid #653b00; border-radius:5px; background:#653b00; color:#fff;
+  font-weight:bold; cursor:pointer; transition:background-color .2s ease;
 }
+nav.hop-menu a.button:hover { background:#2d4d2d; }
 
-nav.hop-menu a.button:hover {
-  background-color: #2d4d2d; /* darker greenish hue on hover */
-}
-
-/* The main content container */
 .content {
-  margin: 2rem auto;
-  width: 90%;
-  max-width: 1000px;
-  background: #fff;
-  padding: 1.5rem 2rem;
-  border-radius: 6px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-  position: relative; /* for anchoring .qr-code if needed */
+  margin:2rem auto;
+  width:90%; max-width:1000px;
+  background:#fff; padding:1.5rem 2rem; border-radius:6px;
+  box-shadow:0 3px 10px rgba(0,0,0,.1);
+  position:relative;
 }
 
-/* The QR code at bottom-right corner (if used) */
 .qr-code {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  width: 110px;
-  height: 110px;
-  border: 2px solid #653b00; /* updated border color */
-  border-radius: 4px;
+  position:absolute; bottom:10px; right:10px;
+  width:110px; height:110px; border:2px solid #653b00; border-radius:4px;
 }
 
-/* MOBILE STYLES (up to 600px) */
-@media (max-width: 600px) {
+/* ============ Mobile tweaks ============ */
+@media (max-width:600px) {
+  .menu-icon { display:block; }
+  #toggle-menu:not(:checked) ~ nav.hop-menu ul { display:none; }
+  #toggle-menu:checked ~ nav.hop-menu ul { display:inline-flex; flex-wrap:wrap; gap:.5rem; justify-content:center; }
+  .qr-code { width:80px; height:80px; }
+}
 
-  /* Show hamburger icon */
-  .menu-icon {
-    display: block;
-  }
-  
-  /* Hide the menu (the UL) by default unless toggled on */
-  #toggle-menu:not(:checked) ~ nav.hop-menu ul {
-    display: none;
-  }
-  
-  /* When toggled (checkbox checked), show it as inline-flex so items line up */
-  #toggle-menu:checked ~ nav.hop-menu ul {
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    justify-content: center;
-  }
 
-  nav.hop-menu ul li {
-    margin: 0; /* if you want some spacing, use margin:0.25rem or 0.5rem, etc. */
-  }
+/* ============ NEW: full‑width viewer styles ============ */
+.viewer {
+  margin:0;
+  padding:0;
+  width:100%;
+  max-width:none;
+  background:none;
+  box-shadow:none;
+  position:relative;           /* keep QR positioned */
+}
 
-  /* Make the QR code smaller on mobile */
-  .qr-code {
-    width: 80px;
-    height: 80px;
-  }
+.viewer iframe {
+  display:block;
+  width:100vw;                 /* stretch edge‑to‑edge */
+  height:calc(100vh - 170px);  /* header + nav ≈170 px */
+  border:none;
+}
+
+@media (max-width:600px) {
+  .viewer iframe { height:calc(100vh - 120px); }
 }

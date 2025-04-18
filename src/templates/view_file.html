@@ -12,41 +12,26 @@
       <label for="toggle-menu" class="menu-icon">&#9776;</label>
       <input type="checkbox" id="toggle-menu" />
     </header>
+
     <nav class="hop-menu">
       <ul>
-        <li>
-          <a class="button" href="{{ home_url }}">Home</a>
-        </li>
+        <li><a class="button" href="{{ home_url }}">Home</a></li>
         {% for s, title, fileurl in files_data %}
-          <li>
-            <a class="button" href="{{ url_for('view_file', slug=s) }}">
-              {{ title }}
-            </a>
-          </li>
+          <li><a class="button" href="{{ url_for('view_file', slug=s) }}">{{ title }}</a></li>
         {% endfor %}
-        <!-- The "All QR Codes" link is commented out to hide it
-        <li>
-          <a class="button" href="{{ url_for('all_qr_codes') }}">All QR Codes</a>
-        </li>
-        -->
       </ul>
     </nav>
-    <section class="content">
-      <h2>{{ file_title }}</h2>
+
+    <section class="viewer">
       {% if embed_url %}
-        <iframe 
-          src="{{ embed_url }}"
-          width="100%"
-          height="600"
-          style="border: none;">
-        </iframe>
+        <iframe src="{{ embed_url }}"></iframe>
       {% else %}
-        <p>No embed URL available. Possibly not a Google Doc or missing a link.</p>
+        <p>No embed URL available.</p>
       {% endif %}
-      <!-- The QR code in bottom-right corner -->
-      <a href="{{ url_for('view_file_qr_only', slug=slug) }}" target="_blank">
-        <img src="{{ qr_code_data_uri }}" alt="QR Code" class="qr-code">
-      </a>
+
+      <!-- <a href="{{ url_for('view_file_qr_only', slug=slug) }}" target="_blank">
+        <img src="{{ qr_code_data_uri }}" alt="QR Code" class="qr-code">
+      </a> -->
     </section>
   </body>
 </html>
