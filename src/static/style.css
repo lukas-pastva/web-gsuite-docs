@@ -3,7 +3,7 @@
 
 body {
   font-family:"Open Sans", Arial, sans-serif;
-  background:linear-gradient(135deg,#ffffff 0%,#f7f3ec 100%);
+  background:linear-gradient(135deg,#ffffff 0%,#fff 100%);
   color:#444;
 }
 
@@ -21,11 +21,11 @@ header h1 { font-size:1.8rem; }
 #toggle-menu { display:none; }
 
 nav.hop-menu { margin-bottom:1.5rem; text-align:center; }
-nav.hop-menu ul { list-style:none; display:inline-flex; flex-wrap:wrap; gap:.5rem; justify-content:center; margin-top:.5rem; }
+nav.hop-menu ul { list-style:none; display:inline-flex; flex-wrap:wrap; gap:.5rem; justify-content:center; margin-top:.3rem; }
 
 nav.hop-menu a.button {
-  display:inline-block; padding:.5rem 1rem; text-decoration:none;
-  border:2px solid #653b00; border-radius:5px; background:#653b00; color:#fff;
+  display:inline-block; padding:.1rem .4rem; text-decoration:none;
+  border:2px solid #653b00; border-radius:2px; background:#653b00; color:#fff;
   font-weight:bold; cursor:pointer; transition:background-color .2s ease;
 }
 nav.hop-menu a.button:hover { background:#2d4d2d; }
