@@ -8,7 +8,6 @@ import base64
 
 import qrcode
 from flask import Flask, render_template, request, url_for
-from helpers import build_iframe_url
 
 app = Flask(__name__)
 
